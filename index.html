@@ -3,45 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Project Management Dashboard</title>
+    <title>ACM Commercialization Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 font-sans">
-    <header class="bg-blue-600 text-white p-4">
-        <h1 class="text-2xl font-bold">Project Management Dashboard</h1>
+    <header class="bg-green-600 text-white p-4">
+        <h1 class="text-2xl font-bold">ACM Commercialization Dashboard</h1>
     </header>
     <main class="container mx-auto p-6">
         <section id="dashboard" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <!-- Project cards will be dynamically inserted here -->
         </section>
+        <button id="addProjectBtn" class="bg-green-600 text-white px-4 py-2 rounded mt-4">Add Project</button>
     </main>
     <script>
         // Sample project data
-        const projects = [
+        let projects = [
             { id: 1, name: "Website Redesign", status: "In Progress", progress: 75 },
             { id: 2, name: "Product Launch", status: "Completed", progress: 100 },
             { id: 3, name: "Marketing Campaign", status: "Not Started", progress: 0 },
-            { id: 4, name: "App Development", status: "In Progress", progress: 40 }
+            { id: 4, name: "App Development", status: "In Progress", progress: 40 },
+            { id: 5, name: "Customer Feedback Analysis", status: "In Progress", progress: 60 },
+            { id: 6, name: "SEO Optimization", status: "Not Started", progress: 0 },
+            { id: 7, name: "Cloud Migration", status: "Completed", progress: 100 }
         ];
 
         // Function to render project cards
         function renderProjects() {
             const dashboard = document.getElementById('dashboard');
             dashboard.innerHTML = '';
-            projects.forEach(project => {
+            projects.forEach((project, index) => {
                 const card = document.createElement('div');
                 card.className = 'bg-white p-6 rounded-lg shadow-md';
                 card.innerHTML = `
-                    <h2 class="text-xl font-semibold mb-2">${project.name}</h2>
+                    <input type="text" value="${project.name}" class="text-xl font-semibold mb-2 w-full border border-gray-300 rounded p-1" onchange="updateProject(${index}, 'name', this.value)" />
                     <p class="text-gray-600 mb-2">Status: ${project.status}</p>
                     <div class="w-full bg-gray-200 rounded-full h-2.5">
-                        <div class="bg-blue-600 h-2.5 rounded-full" style="width: ${project.progress}%"></div>
+                        <div class="bg-green-600 h-2.5 rounded-full" style="width: ${project.progress}%"></div>
                     </div>
-                    <p class="text-sm text-gray-500 mt-2">Progress: ${project.progress}%</p>
+                    <input type="number" value="${project.progress}" class="text-sm text-gray-500 mt-2 w-full border border-gray-300 rounded p-1" onchange="updateProject(${index}, 'progress', this.value)" />
+                    <button class="bg-red-600 text-white px-4 py-2 rounded mt-2" onclick="deleteProject(${index})">Delete</button>
                 `;
                 dashboard.appendChild(card);
             });
         }
+
+        // Function to update project data
+        function updateProject(index, field, value) {
+            projects[index][field] = field === 'progress' ? parseInt(value) : value;
+            renderProjects();
+        }
+
+        // Function to delete a project
+        function deleteProject(index) {
+            projects.splice(index, 1);
+            renderProjects();
+        }
+
+        // Function to add a new project
+        function addProject() {
+            const newProject = { id: projects.length + 1, name: "New Project", status: "Not Started", progress: 0 };
+            projects.push(newProject);
+            renderProjects();
+        }
+
+        // Attach event listener to the "Add Project" button
+        document.getElementById('addProjectBtn').addEventListener('click', addProject);
 
         // Initial render
         renderProjects();
