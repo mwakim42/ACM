@@ -17,15 +17,92 @@
         <button id="addProjectBtn" class="bg-green-600 text-white px-4 py-2 rounded mt-4">Add Project</button>
     </main>
     <script>
-        // Load projects from localStorage or use default data
-        let projects = JSON.parse(localStorage.getItem('projects')) || [
-            { id: 1, name: "Website Redesign", buyer: "John Doe", link: "", progress: 0, paperConcept: false, preliminarySamples: false, continuedDevelopment: false, samplesApproved: false },
-            { id: 2, name: "Product Launch", buyer: "Jane Smith", link: "", progress: 0, paperConcept: false, preliminarySamples: false, continuedDevelopment: false, samplesApproved: false }
-        ];
+        const API_URL = 'https://rav42n2th0.execute-api.us-east-2.amazonaws.com
+'; // Replace with your API Gateway URL
 
-        // Save projects to localStorage
-        function saveProjects() {
-            localStorage.setItem('projects', JSON.stringify(projects));
+        let projects = [];
+
+        // Fetch all projects from the backend
+        async function fetchProjects() {
+            try {
+                const response = await fetch(`${API_URL}/projects`);
+                projects = await response.json();
+                renderProjects();
+            } catch (error) {
+                console.error('Error fetching projects:', error);
+                alert('Failed to fetch projects. Please check your API URL.');
+            }
+        }
+
+        // Save a new project to the backend
+        async function addProject() {
+            const password = prompt("Enter the password to add a new project:");
+            if (password === "42") {
+                const newProject = {
+                    name: "New Project",
+                    buyer: "Unknown",
+                    link: "",
+                    progress: 0,
+                    paperConcept: false,
+                    preliminarySamples: false,
+                    continuedDevelopment: false,
+                    samplesApproved: false,
+                };
+                try {
+                    const response = await fetch(`${API_URL}/projects`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(newProject),
+                    });
+                    const project = await response.json();
+                    projects.push(project);
+                    renderProjects();
+                } catch (error) {
+                    console.error('Error adding project:', error);
+                    alert('Failed to add project. Please check your API.');
+                }
+            } else {
+                alert("Incorrect password. Addition canceled.");
+            }
+        }
+
+        // Delete a project from the backend
+        async function deleteProject(index) {
+            const password = prompt("Enter the password to delete this project:");
+            if (password === "42") {
+                const project = projects[index];
+                try {
+                    await fetch(`${API_URL}/projects`, {
+                        method: 'DELETE',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id: project.id }),
+                    });
+                    projects.splice(index, 1);
+                    renderProjects();
+                } catch (error) {
+                    console.error('Error deleting project:', error);
+                    alert('Failed to delete project. Please check your API.');
+                }
+            } else {
+                alert("Incorrect password. Deletion canceled.");
+            }
+        }
+
+        // Update a project in the backend
+        async function updateProject(index, field, value) {
+            projects[index][field] = value;
+            projects[index].progress = calculateProgress(projects[index]);
+            try {
+                await fetch(`${API_URL}/projects`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(projects[index]),
+                });
+                renderProjects();
+            } catch (error) {
+                console.error('Error updating project:', error);
+                alert('Failed to update project. Please check your API.');
+            }
         }
 
         // Function to calculate progress based on checkboxes
@@ -55,74 +132,28 @@
                     </div>
                     <p class="text-sm text-gray-500 mb-2">Progress: ${project.progress}%</p>
                     <label class="block mb-2">
-                        <input type="checkbox" ${project.paperConcept ? 'checked' : ''} onchange="updateCheckbox(${index}, 'paperConcept', this.checked)" /> Paper Concept
+                        <input type="checkbox" ${project.paperConcept ? 'checked' : ''} onchange="updateProject(${index}, 'paperConcept', this.checked)" /> Paper Concept
                     </label>
                     <label class="block mb-2">
-                        <input type="checkbox" ${project.preliminarySamples ? 'checked' : ''} onchange="updateCheckbox(${index}, 'preliminarySamples', this.checked)" /> Preliminary Samples Sent
+                        <input type="checkbox" ${project.preliminarySamples ? 'checked' : ''} onchange="updateProject(${index}, 'preliminarySamples', this.checked)" /> Preliminary Samples Sent
                     </label>
                     <label class="block mb-2">
-                        <input type="checkbox" ${project.continuedDevelopment ? 'checked' : ''} onchange="updateCheckbox(${index}, 'continuedDevelopment', this.checked)" /> Continued Development in Progress
+                        <input type="checkbox" ${project.continuedDevelopment ? 'checked' : ''} onchange="updateProject(${index}, 'continuedDevelopment', this.checked)" /> Continued Development in Progress
                     </label>
                     <label class="block mb-2">
-                        <input type="checkbox" ${project.samplesApproved ? 'checked' : ''} onchange="updateCheckbox(${index}, 'samplesApproved', this.checked)" /> Samples Approved by Customer
+                        <input type="checkbox" ${project.samplesApproved ? 'checked' : ''} onchange="updateProject(${index}, 'samplesApproved', this.checked)" /> Samples Approved by Customer
                     </label>
-                    <button class="bg-red-600 text-white px-4 py-2 rounded mt-2" onclick="confirmDelete(${index})">Delete</button>
+                    <button class="bg-red-600 text-white px-4 py-2 rounded mt-2" onclick="deleteProject(${index})">Delete</button>
                 `;
                 dashboard.appendChild(card);
             });
         }
 
-        // Function to update project data
-        function updateProject(index, field, value) {
-            projects[index][field] = value;
-            projects[index].progress = calculateProgress(projects[index]);
-            saveProjects(); // Save changes to localStorage
-            renderProjects();
-        }
-
-        // Function to update checkbox fields
-        function updateCheckbox(index, field, value) {
-            projects[index][field] = value;
-            projects[index].progress = calculateProgress(projects[index]);
-            saveProjects(); // Save changes to localStorage
-            renderProjects();
-        }
-
-        // Function to confirm deletion with password
-        function confirmDelete(index) {
-            const password = prompt("Enter the password to delete this project:");
-            if (password === "42") {
-                deleteProject(index);
-            } else {
-                alert("Incorrect password. Deletion canceled.");
-            }
-        }
-
-        // Function to delete a project
-        function deleteProject(index) {
-            projects.splice(index, 1);
-            saveProjects(); // Save changes to localStorage
-            renderProjects();
-        }
-
-        // Function to add a new project with password protection
-        function addProject() {
-            const password = prompt("Enter the password to add a new project:");
-            if (password === "42") {
-                const newProject = { id: projects.length + 1, name: "New Project", buyer: "Unknown", link: "", progress: 0, paperConcept: false, preliminarySamples: false, continuedDevelopment: false, samplesApproved: false };
-                projects.push(newProject);
-                saveProjects(); // Save changes to localStorage
-                renderProjects();
-            } else {
-                alert("Incorrect password. Addition canceled.");
-            }
-        }
-
         // Attach event listener to the "Add Project" button
         document.getElementById('addProjectBtn').addEventListener('click', addProject);
 
-        // Initial render
-        renderProjects();
+        // Initial fetch
+        fetchProjects();
     </script>
 </body>
 </html>
