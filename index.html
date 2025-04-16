@@ -19,18 +19,24 @@
     <script>
         // Load projects from localStorage or use default data
         let projects = JSON.parse(localStorage.getItem('projects')) || [
-            { id: 1, name: "Website Redesign", status: "In Progress", progress: 75 },
-            { id: 2, name: "Product Launch", status: "Completed", progress: 100 },
-            { id: 3, name: "Marketing Campaign", status: "Not Started", progress: 0 },
-            { id: 4, name: "App Development", status: "In Progress", progress: 40 },
-            { id: 5, name: "Customer Feedback Analysis", status: "In Progress", progress: 60 },
-            { id: 6, name: "SEO Optimization", status: "Not Started", progress: 0 },
-            { id: 7, name: "Cloud Migration", status: "Completed", progress: 100 }
+            { id: 1, name: "Website Redesign", buyer: "John Doe", progress: 0, paperConcept: false, preliminarySamples: false, continuedDevelopment: false, samplesApproved: false },
+            { id: 2, name: "Product Launch", buyer: "Jane Smith", progress: 0, paperConcept: false, preliminarySamples: false, continuedDevelopment: false, samplesApproved: false }
         ];
 
         // Save projects to localStorage
         function saveProjects() {
             localStorage.setItem('projects', JSON.stringify(projects));
+        }
+
+        // Function to calculate progress based on checkboxes
+        function calculateProgress(project) {
+            const totalSteps = 4;
+            let completedSteps = 0;
+            if (project.paperConcept) completedSteps++;
+            if (project.preliminarySamples) completedSteps++;
+            if (project.continuedDevelopment) completedSteps++;
+            if (project.samplesApproved) completedSteps++;
+            return Math.round((completedSteps / totalSteps) * 100);
         }
 
         // Function to render project cards
@@ -42,12 +48,24 @@
                 card.className = 'bg-white p-6 rounded-lg shadow-md';
                 card.innerHTML = `
                     <input type="text" value="${project.name}" class="text-xl font-semibold mb-2 w-full border border-gray-300 rounded p-1" onchange="updateProject(${index}, 'name', this.value)" />
-                    <p class="text-gray-600 mb-2">Status: ${project.status}</p>
-                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                    <input type="text" value="${project.buyer}" class="text-sm text-gray-500 mb-2 w-full border border-gray-300 rounded p-1" onchange="updateProject(${index}, 'buyer', this.value)" placeholder="Buyer" />
+                    <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2">
                         <div class="bg-green-600 h-2.5 rounded-full" style="width: ${project.progress}%"></div>
                     </div>
-                    <input type="number" value="${project.progress}" class="text-sm text-gray-500 mt-2 w-full border border-gray-300 rounded p-1" onchange="updateProject(${index}, 'progress', this.value)" />
-                    <button class="bg-red-600 text-white px-4 py-2 rounded mt-2" onclick="deleteProject(${index})">Delete</button>
+                    <p class="text-sm text-gray-500 mb-2">Progress: ${project.progress}%</p>
+                    <label class="block mb-2">
+                        <input type="checkbox" ${project.paperConcept ? 'checked' : ''} onchange="updateCheckbox(${index}, 'paperConcept', this.checked)" /> Paper Concept (Y/N)
+                    </label>
+                    <label class="block mb-2">
+                        <input type="checkbox" ${project.preliminarySamples ? 'checked' : ''} onchange="updateCheckbox(${index}, 'preliminarySamples', this.checked)" /> Preliminary Samples Sent (Y/N)
+                    </label>
+                    <label class="block mb-2">
+                        <input type="checkbox" ${project.continuedDevelopment ? 'checked' : ''} onchange="updateCheckbox(${index}, 'continuedDevelopment', this.checked)" /> Continued Development in Progress
+                    </label>
+                    <label class="block mb-2">
+                        <input type="checkbox" ${project.samplesApproved ? 'checked' : ''} onchange="updateCheckbox(${index}, 'samplesApproved', this.checked)" /> Samples Approved by Customer
+                    </label>
+                    <button class="bg-red-600 text-white px-4 py-2 rounded mt-2" onclick="confirmDelete(${index})">Delete</button>
                 `;
                 dashboard.appendChild(card);
             });
@@ -55,9 +73,28 @@
 
         // Function to update project data
         function updateProject(index, field, value) {
-            projects[index][field] = field === 'progress' ? parseInt(value) : value;
+            projects[index][field] = value;
+            projects[index].progress = calculateProgress(projects[index]);
             saveProjects(); // Save changes to localStorage
             renderProjects();
+        }
+
+        // Function to update checkbox fields
+        function updateCheckbox(index, field, value) {
+            projects[index][field] = value;
+            projects[index].progress = calculateProgress(projects[index]);
+            saveProjects(); // Save changes to localStorage
+            renderProjects();
+        }
+
+        // Function to confirm deletion with password
+        function confirmDelete(index) {
+            const password = prompt("Enter the password to delete this project:");
+            if (password === "42") {
+                deleteProject(index);
+            } else {
+                alert("Incorrect password. Deletion canceled.");
+            }
         }
 
         // Function to delete a project
@@ -67,12 +104,17 @@
             renderProjects();
         }
 
-        // Function to add a new project
+        // Function to add a new project with password protection
         function addProject() {
-            const newProject = { id: projects.length + 1, name: "New Project", status: "Not Started", progress: 0 };
-            projects.push(newProject);
-            saveProjects(); // Save changes to localStorage
-            renderProjects();
+            const password = prompt("Enter the password to add a new project:");
+            if (password === "42") {
+                const newProject = { id: projects.length + 1, name: "New Project", buyer: "Unknown", progress: 0, paperConcept: false, preliminarySamples: false, continuedDevelopment: false, samplesApproved: false };
+                projects.push(newProject);
+                saveProjects(); // Save changes to localStorage
+                renderProjects();
+            } else {
+                alert("Incorrect password. Addition canceled.");
+            }
         }
 
         // Attach event listener to the "Add Project" button
