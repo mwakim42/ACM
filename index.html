@@ -19,8 +19,8 @@
     <script>
         // Load projects from localStorage or use default data
         let projects = JSON.parse(localStorage.getItem('projects')) || [
-            { id: 1, name: "Website Redesign", buyer: "John Doe", progress: 0, paperConcept: false, preliminarySamples: false, continuedDevelopment: false, samplesApproved: false },
-            { id: 2, name: "Product Launch", buyer: "Jane Smith", progress: 0, paperConcept: false, preliminarySamples: false, continuedDevelopment: false, samplesApproved: false }
+            { id: 1, name: "Website Redesign", buyer: "John Doe", link: "", progress: 0, paperConcept: false, preliminarySamples: false, continuedDevelopment: false, samplesApproved: false },
+            { id: 2, name: "Product Launch", buyer: "Jane Smith", link: "", progress: 0, paperConcept: false, preliminarySamples: false, continuedDevelopment: false, samplesApproved: false }
         ];
 
         // Save projects to localStorage
@@ -49,15 +49,16 @@
                 card.innerHTML = `
                     <input type="text" value="${project.name}" class="text-xl font-semibold mb-2 w-full border border-gray-300 rounded p-1" onchange="updateProject(${index}, 'name', this.value)" />
                     <input type="text" value="${project.buyer}" class="text-sm text-gray-500 mb-2 w-full border border-gray-300 rounded p-1" onchange="updateProject(${index}, 'buyer', this.value)" placeholder="Buyer" />
+                    <input type="url" value="${project.link}" class="text-sm text-blue-500 mb-2 w-full border border-gray-300 rounded p-1" onchange="updateProject(${index}, 'link', this.value)" placeholder="Paste hyperlink here" />
                     <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2">
                         <div class="bg-green-600 h-2.5 rounded-full" style="width: ${project.progress}%"></div>
                     </div>
                     <p class="text-sm text-gray-500 mb-2">Progress: ${project.progress}%</p>
                     <label class="block mb-2">
-                        <input type="checkbox" ${project.paperConcept ? 'checked' : ''} onchange="updateCheckbox(${index}, 'paperConcept', this.checked)" /> Paper Concept (Y/N)
+                        <input type="checkbox" ${project.paperConcept ? 'checked' : ''} onchange="updateCheckbox(${index}, 'paperConcept', this.checked)" /> Paper Concept
                     </label>
                     <label class="block mb-2">
-                        <input type="checkbox" ${project.preliminarySamples ? 'checked' : ''} onchange="updateCheckbox(${index}, 'preliminarySamples', this.checked)" /> Preliminary Samples Sent (Y/N)
+                        <input type="checkbox" ${project.preliminarySamples ? 'checked' : ''} onchange="updateCheckbox(${index}, 'preliminarySamples', this.checked)" /> Preliminary Samples Sent
                     </label>
                     <label class="block mb-2">
                         <input type="checkbox" ${project.continuedDevelopment ? 'checked' : ''} onchange="updateCheckbox(${index}, 'continuedDevelopment', this.checked)" /> Continued Development in Progress
@@ -108,7 +109,7 @@
         function addProject() {
             const password = prompt("Enter the password to add a new project:");
             if (password === "42") {
-                const newProject = { id: projects.length + 1, name: "New Project", buyer: "Unknown", progress: 0, paperConcept: false, preliminarySamples: false, continuedDevelopment: false, samplesApproved: false };
+                const newProject = { id: projects.length + 1, name: "New Project", buyer: "Unknown", link: "", progress: 0, paperConcept: false, preliminarySamples: false, continuedDevelopment: false, samplesApproved: false };
                 projects.push(newProject);
                 saveProjects(); // Save changes to localStorage
                 renderProjects();
