@@ -17,8 +17,8 @@
         <button id="addProjectBtn" class="bg-green-600 text-white px-4 py-2 rounded mt-4">Add Project</button>
     </main>
     <script>
-        // Sample project data
-        let projects = [
+        // Load projects from localStorage or use default data
+        let projects = JSON.parse(localStorage.getItem('projects')) || [
             { id: 1, name: "Website Redesign", status: "In Progress", progress: 75 },
             { id: 2, name: "Product Launch", status: "Completed", progress: 100 },
             { id: 3, name: "Marketing Campaign", status: "Not Started", progress: 0 },
@@ -27,6 +27,11 @@
             { id: 6, name: "SEO Optimization", status: "Not Started", progress: 0 },
             { id: 7, name: "Cloud Migration", status: "Completed", progress: 100 }
         ];
+
+        // Save projects to localStorage
+        function saveProjects() {
+            localStorage.setItem('projects', JSON.stringify(projects));
+        }
 
         // Function to render project cards
         function renderProjects() {
@@ -51,12 +56,14 @@
         // Function to update project data
         function updateProject(index, field, value) {
             projects[index][field] = field === 'progress' ? parseInt(value) : value;
+            saveProjects(); // Save changes to localStorage
             renderProjects();
         }
 
         // Function to delete a project
         function deleteProject(index) {
             projects.splice(index, 1);
+            saveProjects(); // Save changes to localStorage
             renderProjects();
         }
 
@@ -64,6 +71,7 @@
         function addProject() {
             const newProject = { id: projects.length + 1, name: "New Project", status: "Not Started", progress: 0 };
             projects.push(newProject);
+            saveProjects(); // Save changes to localStorage
             renderProjects();
         }
 
